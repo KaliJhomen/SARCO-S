@@ -1,0 +1,83 @@
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Documento } from "../../documento/entities/documento.entity";
+import { EstadoCliente } from "../../estado-cliente/entities/estado-cliente.entity";
+import { Credito } from "../../credito/entities/credito.entity";
+import { Garantia } from "../../garantia/entities/garantia.entity";
+import { Separado } from "../../separado/entities/separado.entity";
+import { Servicio } from "../../servicio/entities/servicio.entity";
+import { Venta } from "../../venta/entities/venta.entity";
+
+@Index("fk_cliente_documento_1", ["idDocumento"], {})
+@Index("fk_cliente_estado_cliente_2", ["idEstadoCliente"], {})
+@Entity("cliente", { schema: "sarcos_db" })
+export class Cliente {
+  @PrimaryGeneratedColumn({ type: "int", name: "id_cliente" })
+  idCliente: number;
+
+  @Column("varchar", { name: "nombre", nullable: true, length: 255 })
+  nombre: string | null;
+
+  @Column("int", { name: "id_documento", nullable: true })
+  idDocumento: number | null;
+
+  @Column("varchar", { name: "numero_documento", length: 255, unique: true })
+  numeroDocumento: string | null;
+
+  @Column("varchar", { name: "direccion", nullable: true, length: 255 })
+  direccion: string | null;
+
+  @Column("varchar", { name: "referencia", nullable: true, length: 255 })
+  referencia: string | null;
+
+  @Column("varchar", { name: "direccion_dni", nullable: true, length: 255 })
+  direccionDni: string | null;
+
+  @Column("varchar", { name: "telefono", nullable: true, length: 255 })
+  telefono: string | null;
+
+  @Column("varchar", { name: "email", nullable: true, length: 255 })
+  email: string | null;
+
+  @Column("int", { name: "id_estado_cliente", nullable: true })
+  idEstadoCliente: number | null;
+
+  @ManyToOne(() => Documento, (documento) => documento.clientes, {
+    onDelete: "NO ACTION",
+    onUpdate: "NO ACTION",
+  })
+  @JoinColumn([{ name: "id_documento", referencedColumnName: "idDocumento" }])
+  idDocumento2: Documento;
+
+  @ManyToOne(() => EstadoCliente, (estadoCliente) => estadoCliente.clientes, {
+    onDelete: "NO ACTION",
+    onUpdate: "NO ACTION",
+  })
+  @JoinColumn([{ name: "id_estado_cliente", referencedColumnName: "idEstado" }])
+  idEstadoCliente2: EstadoCliente;
+
+  @OneToMany(() => Credito, (credito) => credito.idClienteGarante2)
+  creditos: Credito[];
+
+  @OneToMany(() => Credito, (credito) => credito.idCliente2)
+  creditos2: Credito[];
+
+  @OneToMany(() => Garantia, (garantia) => garantia.idCliente2)
+  garantias: Garantia[];
+
+  @OneToMany(() => Separado, (separado) => separado.idCliente2)
+  separados: Separado[];
+
+  @OneToMany(() => Servicio, (servicio) => servicio.idCliente2)
+  servicios: Servicio[];
+
+  @OneToMany(() => Venta, (venta) => venta.idCliente2)
+  ventas: Venta[];
+}

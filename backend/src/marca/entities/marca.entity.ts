@@ -1,0 +1,17 @@
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Producto } from "src/producto/entities/producto.entity";
+
+@Entity("marca", { schema: "sarcos_db" })
+export class Marca {
+  @PrimaryGeneratedColumn({ type: "int", name: "id_marca" })
+  idMarca: number;
+
+  @Column("varchar", { name: "nombre", nullable: true, length: 255 })
+  nombre: string | null;
+
+  @Column("boolean", { name: "estado", default: () => "'1'" })
+  estado: boolean | null;
+
+  @OneToMany(() => Producto, (producto) => producto.idMarca2)
+  productos: Producto[];
+}
