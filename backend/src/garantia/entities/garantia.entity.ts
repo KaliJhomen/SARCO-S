@@ -10,6 +10,7 @@ import { Producto } from "../../producto/entities/producto.entity";
 import { Cliente } from "./../../cliente/entities/cliente.entity";
 import { Tienda } from "./../../tienda/entities/tienda.entity";
 import { Usuario } from "./../../usuario/entities/usuario.entity";
+import { EstadoGarantia } from '../enums/estado-garantia.enum';
 
 @Index("FK_garantia_usuario", ["idUsuario"], {})
 @Index("FK_garantia_cliente", ["idCliente"], {})
@@ -44,10 +45,10 @@ export class Garantia {
   @Column("enum", {
     name: "estado",
     nullable: true,
-    enum: ["pendiente", "en_proceso", "finalizado", "cancelado"],
-    default: "pendiente",   // ✅ sin comillas extras ni función
+    enum: EstadoGarantia,
+    default: EstadoGarantia.PENDIENTE,  
   })
-  estado: "pendiente" | "en_proceso" | "finalizado" | "cancelado" | null;
+  estado: EstadoGarantia | null;
 
   @ManyToOne(() => Producto, (producto) => producto.detalleVentas, {
     onDelete: "NO ACTION",

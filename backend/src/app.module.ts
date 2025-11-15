@@ -45,6 +45,9 @@ import { ProductoTipoProductoModule } from './producto-tipo-producto/producto-ti
 import { SubCategoriaTipoProductoModule } from './sub-categoria-tipo-producto/sub-categoria-tipo-producto.module';
 import { ProductoModule } from './producto/producto.module';
 import { ProductoTiendaProductoModule } from './producto-tienda-producto/producto-tienda-producto.module';
+import { UploadModule } from './upload/upload.module';
+import { ProductoColorModule } from './producto-color/producto-color.module';
+import { ColorModule } from './color/color.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -100,7 +103,10 @@ import { ProductoTiendaProductoModule } from './producto-tienda-producto/product
     ProductoTipoProductoModule,
     SubCategoriaTipoProductoModule,
     ProductoModule,
-    ProductoTiendaProductoModule
+    ProductoTiendaProductoModule,
+    UploadModule,
+    ProductoColorModule,
+    ColorModule
   ],
   controllers: [AppController],
   providers: [AppService],

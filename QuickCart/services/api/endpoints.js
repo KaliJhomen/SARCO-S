@@ -48,13 +48,12 @@ const endpoints = {
   // ============================================
   // COLORES
   // ============================================
-  /*colors: {
+  colors: {
     base: '/color',
     all: '/color',
     byId: (id) => `/color/${id}`,
-    byProduct: (productId) => `/color/producto/${productId}`,
   },
-  */
+
   // ============================================
   // IMÁGENES
   // ============================================
@@ -125,7 +124,7 @@ const endpoints = {
     },
 
   // ============================================
-  // VENDEDORES (si tienes multi-vendor)
+  // VENDEDORES 
   // ============================================
   sellers: {
     base: '/vendedor',
@@ -135,7 +134,19 @@ const endpoints = {
     orders: (sellerId) => `/vendedor/${sellerId}/ordenes`,
     stats: (sellerId) => `/vendedor/${sellerId}/estadisticas`,
   },
-
+  //============================================ 
+  // Tiendas
+  //============================================
+  stores: {
+    all: '/tienda',
+    byId: (id) => `/tienda/${id}`,
+    /*
+    byName: (name) => `/tienda/nombre/${encodeURIComponent(name)}`,
+    byAddress: (address) => `/tienda/direccion/${encodeURIComponent(address)}`,
+    byCondition: (condition) => `/tienda/condicion/${encodeURIComponent(condition)}`,
+    */
+    },
+    
   // ============================================
   // WISHLIST/FAVORITOS
   // ============================================
@@ -150,11 +161,12 @@ const endpoints = {
   // ============================================
   // CUPONES/DESCUENTOS
   // ============================================
+  /*
   coupons: {
     base: '/cupon',
     validate: (code) => `/cupon/validar/${code}`,
     apply: '/cupon/aplicar',
-  },
+  },*/
 
   // ============================================
   // PAGOS
@@ -177,7 +189,7 @@ const endpoints = {
   },
 
   // ============================================
-  // ESTADÍSTICAS/ANALYTICS (Admin/Seller)
+  // ESTADÍSTICAS/ANALYTICS 
   // ============================================
   analytics: {
     dashboard: '/analytics/dashboard',

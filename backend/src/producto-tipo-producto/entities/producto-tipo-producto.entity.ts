@@ -8,15 +8,17 @@ export class ProductoTipoProducto {
     idProductoTipoProducto: number;
 
     @Column("int", { name: "id_producto", nullable: false })
-    idProducto: number | null;
+    idProducto: number;
 
     @Column("int", { name: "id_tipo_producto", nullable: false })
-    idTipoProducto: number | null;
+    idTipoProducto: number;
+
 
     @ManyToOne(() => TipoProducto, (tipoProducto) => tipoProducto.producto_tipo_productos, {
         onDelete: "NO ACTION",
         onUpdate: "NO ACTION",
     })
+
     @JoinColumn([{ name: "id_tipo_producto", referencedColumnName: "idTipoProducto" }])
     idTipoProducto2: TipoProducto;
 

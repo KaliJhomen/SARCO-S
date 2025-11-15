@@ -26,7 +26,7 @@ const AddProductPage = () => {
       // Crear producto en BD con todos los campos requeridos
       const result = await productService.create(productForm.formData);
 
-      toast.success('✅ Producto creado exitosamente');
+      toast.success('Producto creado exitosamente');
       productForm.resetForm();
 
       // Redirigir al detalle del producto creado
@@ -60,7 +60,7 @@ const AddProductPage = () => {
             Agregar Nuevo Producto
           </h1>
           <p className="text-gray-600 mt-1">
-            Complete todos los campos marcados con (*) para continuar
+            Los campos marcados con (*) son obligatorios
           </p>
 
           {/* Mostrar precio final y stock total */}

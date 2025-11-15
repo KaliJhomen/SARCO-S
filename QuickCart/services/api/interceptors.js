@@ -31,7 +31,6 @@ client.interceptors.response.use(
       console.log('📦 Data recibida:', response.data);
     }
 
-    // ✅ IMPORTANTE: Devolver response.data, NO solo response
     return response.data;
   },
   (error) => {

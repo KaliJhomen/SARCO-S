@@ -25,6 +25,7 @@ export class Tienda {
 
   @Column("bigint", { name: "condicion", nullable: true })
   condicion: string | null;
+  
 
   @OneToMany(() => ProductoTienda, (productoTienda) => productoTienda.idTienda2)
   productoTiendas: ProductoTienda[];

@@ -4,13 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
 import { Heart, ShoppingCart, Package } from "lucide-react";
+import { formatPrice } from "@/utils/helpers/formatters";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useAppContext();
   const [isFavorite, setIsFavorite] = useState(false);
 
   if (!product) {
-    console.warn('⚠️ ProductCard: producto vacío');
     return null;
   }
 
@@ -73,15 +73,6 @@ const ProductCard = ({ product }) => {
 
   const imageUrl = getImageUrl(imagen);
   const [src, setSrc] = useState(imageUrl);
-
-  // ✅ FORMATEAR PRECIO
-  const formatPrice = (precio) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 2,
-    }).format(precio);
-  };
 
   const handleFavorite = (e) => {
     e.preventDefault();

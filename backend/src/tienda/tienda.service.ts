@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException} from '@nestjs/common';
 import { CreateTiendaDto } from './dto/create-tienda.dto';
 import { UpdateTiendaDto } from './dto/update-tienda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,28 +12,79 @@ export class TiendaService {
     private readonly tiendaRepository: Repository<Tienda>,
   ) {}
 
-  createTienda(createTiendaDto: CreateTiendaDto) {
-    const newTienda = this.tiendaRepository.create(createTiendaDto);
-    return this.tiendaRepository.save(newTienda);
+  async createTienda(createTiendaDto: CreateTiendaDto) {
+    try {
+      const tienda = this.tiendaRepository.create(createTiendaDto);
+      return await this.tiendaRepository.save(tienda);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Ocurrió un error al crear la tienda',
+      );
+    }
   }
 
-  getTiendas() {
-    return this.tiendaRepository.find();
+  async findAll() {
+    try {
+      return await this.tiendaRepository.find({
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Ocurrió un error al obtener las tiendas',
+      );
+    }
   }
 
-  findAll() {
-    return `This action returns all tienda`;
+  async findOne(id: number) {
+    try {
+      const tienda = await this.tiendaRepository.findOne({
+        where: { idTienda: id }
+      });
+
+      if (!tienda) {
+        throw new NotFoundException(`Tienda con ID ${id} no encontrado`);
+      }
+
+      return tienda;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException(
+        `Error al obtener la tienda con ID ${id}`,
+      );
+    }  
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} tienda`;
+  async update(id: number, updateTiendaDto: UpdateTiendaDto) {
+    try {
+      const tienda = await this.tiendaRepository.preload({
+        idTienda: id,
+        ...updateTiendaDto,
+      });
+      if (!tienda) {
+        throw new NotFoundException(`Tienda con ID ${id} no encontrado`);
+      }
+      return await this.tiendaRepository.save(tienda);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al actualizar la tienda con ID ${id}`,
+      );
+    }  
   }
 
-  update(id: number, updateTiendaDto: UpdateTiendaDto) {
-    return `This action updates a #${id} tienda`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tienda`;
-  }
+  async remove(id: number) {
+    try {
+      const tienda = await this.tiendaRepository.findOne({ where: { idTienda: id } });
+      if (!tienda) {
+        throw new NotFoundException(`Tienda con ID ${id} no encontrado`);
+      }
+      await this.tiendaRepository.remove(tienda);
+      return { message: `Tienda con ID ${id} eliminado correctamente` };
+    } catch (error) {
+      console.error('Error en remove:', error);
+      throw new InternalServerErrorException(
+        `Error al eliminar la tienda con ID ${id}`,
+      );
+    }  }
 }

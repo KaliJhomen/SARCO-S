@@ -2,14 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import cookieParser from 'cookie-parser'; // ✅ Sin asterisco
+import cookieParser from 'cookie-parser'; 
 import { HttpExceptionFilter } from './common/execeptions/http-exception.filter';
 import * as dotenv from 'dotenv';
-
-// ✅ Cargar .env explícitamente
+import * as express from 'express';
+import { join } from 'path';
+// Cargar .env explícitamente
 dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+  app.use('/productos', express.static(join(__dirname, '..', 'public', 'productos')));
   const config = new DocumentBuilder()
     .setTitle('Cats example')
     .setDescription('The cats API description')
@@ -18,8 +21,8 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory, {
     swaggerOptions: {
-      tagsSorter: 'alpha', // 👈 fuerza orden alfabético en el menú
-      operationsSorter: 'alpha', // 👈 también ordena los endpoints dentro del tag
+      tagsSorter: 'alpha', 
+      operationsSorter: 'alpha', 
     },
   });
 
@@ -46,9 +49,10 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Set-Cookie'],
   });
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
   const port = Number(process.env.PORT ?? 4000);
   const host = process.env.HOST || '0.0.0.0';
-  await app.listen(port, host);
+  await app.listen(process.env.PORT || 4000);
   // Log explícito de arranque
   console.log(`Nest app listening on http://${host === '0.0.0.0' ? 'localhost' : host}:${port}`);
 }

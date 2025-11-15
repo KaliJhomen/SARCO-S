@@ -1,8 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { ProductoService } from './producto.service';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @ApiTags('Producto')
@@ -126,16 +127,27 @@ export class ProductoController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Obtener un articulo por ID' })
+  @ApiResponse({ status: 200, description: 'Articulo obtenido correctamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiBody({ type: CreateProductoDto })
   findOne(@Param('id') id: string) {
     return this.productoService.findOne(+id);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar un articulo' })
+  @ApiResponse({ status: 201, description: 'Articulo actualizado correctamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiBody({ type: UpdateProductoDto })
   update(@Param('id') id: string, @Body() updateProductoDto: UpdateProductoDto) {
     return this.productoService.update(+id, updateProductoDto);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar un articulo' })
+  @ApiResponse({ status: 201, description: 'Articulo eliminado correctamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
   remove(@Param('id') id: string) {
     return this.productoService.remove(+id);
   }

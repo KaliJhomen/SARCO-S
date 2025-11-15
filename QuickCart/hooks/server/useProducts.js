@@ -73,7 +73,7 @@ export function useProductsByBrand(idMarca) {
   return useQuery({
     queryKey: ['products', 'brand', idMarca],
     queryFn: () => productService.getByBrand(idMarca),
-    enabled: !!brandId,
+    enabled: !!idMarca,
     staleTime: 5 * 60 * 1000,
   });
 }

@@ -6,11 +6,11 @@ export class Marca {
   @PrimaryGeneratedColumn({ type: "int", name: "id_marca" })
   idMarca: number;
 
-  @Column("varchar", { name: "nombre", nullable: true, length: 255 })
-  nombre: string | null;
+  @Column("varchar", { name: "nombre", length: 255 })
+  nombre: string;
 
   @Column("boolean", { name: "estado", default: () => "'1'" })
-  estado: boolean | null;
+  estado: boolean;
 
   @OneToMany(() => Producto, (producto) => producto.idMarca2)
   productos: Producto[];

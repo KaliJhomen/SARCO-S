@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateProductoTipoProductoDto } from './dto/create-producto-tipo-producto.dto';
 import { UpdateProductoTipoProductoDto } from './dto/update-producto-tipo-producto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,8 +11,22 @@ export class ProductoTipoProductoService {
     @InjectRepository(ProductoTipoProducto)
     private productoTipoProductoRepository: Repository<ProductoTipoProducto>,
   ) { }
-  create(createProductoTipoProductoDto: CreateProductoTipoProductoDto) {
-    return 'This action adds a new productoTipoProducto';
+  async create(createProductoTipoProductoDto: CreateProductoTipoProductoDto) {
+    try {
+      const entity = this.productoTipoProductoRepository.create(createProductoTipoProductoDto);
+      return await this.productoTipoProductoRepository.save(entity);
+    } catch (error) {
+      if (
+        error.code === 'ER_DUP_ENTRY' ||
+        (error.message && error.message.includes('Duplicate entry'))
+      ) {
+        throw new InternalServerErrorException(
+          'Este producto ya está asociado a ese tipo de producto.'
+        );
+      }
+      console.error(error);
+      throw new InternalServerErrorException('Ocurrió un error al crear el producto-tipo-producto');
+    }
   }
 
   async findAll() {
@@ -26,15 +40,52 @@ export class ProductoTipoProductoService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} productoTipoProducto`;
+  async findOne(id: number) {
+    try {
+      const entity = await this.productoTipoProductoRepository.findOne({ where: { idProductoTipoProducto: id } });
+      if (!entity) {
+        throw new NotFoundException(`No se encontró el producto-tipo-producto con ID ${id}`);
+      }
+      return entity;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        `Ocurrió un error al obtener el producto-tipo-producto con ID ${id}`,
+      );
+    }
   }
 
-  update(id: number, updateProductoTipoProductoDto: UpdateProductoTipoProductoDto) {
-    return `This action updates a #${id} productoTipoProducto`;
+  async update(id: number, updateProductoTipoProductoDto: UpdateProductoTipoProductoDto) {
+    try {
+      const entity = await this.productoTipoProductoRepository.preload({
+        idProductoTipoProducto: id,
+        ...updateProductoTipoProductoDto,
+      });
+      if (!entity) {
+        throw new NotFoundException(`No se encontró el producto-tipo-producto con ID ${id}`);
+      }
+      return await this.productoTipoProductoRepository.save(entity);
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        `Ocurrió un error al actualizar el producto-tipo-producto con ID ${id}`,
+      );
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} productoTipoProducto`;
+  async remove(id: number) {
+    try {
+      const entity = await this.productoTipoProductoRepository.findOne({ where: { idProductoTipoProducto: id } });
+      if (!entity) {
+        throw new NotFoundException(`No se encontró el producto-tipo-producto con ID ${id}`);
+      }
+      await this.productoTipoProductoRepository.remove(entity);
+      return { message: `Producto-tipo-producto con ID ${id} eliminado correctamente` };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        `Ocurrió un error al eliminar el producto-tipo-producto con ID ${id}`,
+      );
+    }
   }
 }

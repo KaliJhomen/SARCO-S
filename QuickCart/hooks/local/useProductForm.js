@@ -1,28 +1,27 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { 
-  validateProductForm, 
-  calculateFinalPrice, 
-  calculateMonthlyPayment, 
-  calculateTotalStock 
-} from '@/utils/helpers/productValidators';
+import { validateProductForm } from '@/utils/helpers/productValidators';
+import {calculateFinalPrice, calculateMonthlyPayment, calculateTotalStock } from '@/utils/helpers/calculators';
 
 export const useProductForm = () => {
   const [formData, setFormData] = useState({
     // Campos básicos del producto
     nombre: '',
+    modelo: '',         
     descripcion: '',
-    precio: '',
+    precioTope: '',
+    precioVenta: '',
     descuento: 0,
     
     // Relaciones (IDs) - según tu BD
     idMarca: '',
     idCategoria: '',
+    idTienda: '',       // <--- Faltaba
     
     // Información adicional
     garantia: '',
-    mesesSinInteres: 0,
-    
+    mesesCredito: 0,
+/*    
     // Colores con sus imágenes y stock
     colores: [{
       id: Date.now(),
@@ -31,12 +30,13 @@ export const useProductForm = () => {
       stock: 0,
       imagenes: [] // URLs de imágenes subidas
     }]
+*/      
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ Calcular valores derivados usando helpers
+  // Calcular valores derivados usando helpers
   const precioFinal = useMemo(() => 
     calculateFinalPrice(formData.precio, formData.descuento),
     [formData.precio, formData.descuento]
@@ -122,14 +122,18 @@ export const useProductForm = () => {
     }));
   };
 
-  // ✅ Validar usando productValidators existente
+  // Validar usando productValidators existente
   const validate = () => {
     const validation = validateProductForm({
       nombre: formData.nombre,
-      marca: formData.idMarca, // El validador espera "marca"
+      idMarca: formData.idMarca,
       precio: formData.precio,
-      categoria: formData.idCategoria, // El validador espera "categoria"
-      colores: formData.colores
+      idCategoria: formData.idCategoria,
+      colores: formData.colores,
+      imagen: formData.imagen, // si usas imagen principal
+      modelo: formData.modelo, // si usas modelo
+      idTienda: formData.idTienda, // si usas tienda
+      // ...otros campos necesarios
     });
 
     setErrors(validation.errors);
@@ -139,11 +143,14 @@ export const useProductForm = () => {
   const resetForm = () => {
     setFormData({
       nombre: '',
+      modelo: '',         // <--- Faltaba
       descripcion: '',
       precio: '',
       descuento: 0,
       idMarca: '',
       idCategoria: '',
+      idTienda: '',       // <--- Faltaba
+      imagen: '',         // <--- Faltaba
       garantia: '',
       mesesSinInteres: 0,
       colores: [{

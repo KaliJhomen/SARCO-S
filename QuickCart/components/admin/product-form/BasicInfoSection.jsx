@@ -1,17 +1,49 @@
 'use client';
-import React from 'react';
-import { Package, Loader2 } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Package, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useBrands } from '@/hooks/server/useBrands';
 import { useCategories } from '@/hooks/server/useCategories';
+import { useStores } from '@/hooks/server/useStores';
 
 export const BasicInfoSection = ({
   formData,
   errors,
   updateField,
 }) => {
-  // ✅ Obtener datos reales de BD
   const { data: brands = [], isLoading: loadingBrands } = useBrands();
   const { data: categories = [], isLoading: loadingCategories } = useCategories();
+  const { data: stores = [], isLoading: loadingStores } = useStores();
+  const fileInputRef = useRef();
+
+  // Previsualización de imagen
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formDataImg = new FormData();
+    formDataImg.append('file', file);
+
+    try {
+      const res = await fetch('http://localhost:4000/api/upload', {
+        method: 'POST',
+        body: formDataImg,
+      });
+      const data = await res.json();
+      if (data.url) {
+        updateField('imagen', data.url); // Guarda la URL
+      } else {
+        alert('Error al subir la imagen');
+      }
+    } catch (err) {
+      alert('Error al subir la imagen');
+    }
+  };
+
+  // Convierte los valores de los selects a número (o vacío)
+  const handleSelectNumber = (field) => (e) => {
+    const value = e.target.value;
+    updateField(field, value === "" ? "" : Number(value));
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -29,7 +61,7 @@ export const BasicInfoSection = ({
           </label>
           <input
             type="text"
-            placeholder='Ej: Smart TV LED 55" 4K Ultra HD'
+            placeholder='NOMBRE'
             className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
               errors?.nombre ? 'border-red-500' : 'border-gray-300'
             }`}
@@ -48,7 +80,7 @@ export const BasicInfoSection = ({
           </label>
           <input
             type="text"
-            placeholder="Ej: XPS 13 9310"
+            placeholder="MODELO DEL PRODUCTO"
             className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
               errors?.modelo ? 'border-red-500' : 'border-gray-300'
             }`}
@@ -63,12 +95,12 @@ export const BasicInfoSection = ({
         {/* Stock */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Stock <span className="text-red-500">*</span>
+            Stock Inicial<span> (Opcional):</span>
           </label>
           <input
             type="number"
             min={0}
-            placeholder="Ej: 100"
+            placeholder="STOCK INICIAL"
             className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
               errors?.stock ? 'border-red-500' : 'border-gray-300'
             }`}
@@ -80,7 +112,7 @@ export const BasicInfoSection = ({
           )}
         </div>
 
-        {/* Marca - desde BD */}
+        {/* Marca */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Marca <span className="text-red-500">*</span>
@@ -90,15 +122,15 @@ export const BasicInfoSection = ({
               className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
                 errors?.marca || errors?.idMarca ? 'border-red-500' : 'border-gray-300'
               } ${loadingBrands ? 'opacity-50' : ''}`}
-              value={formData.idMarca || formData.marca}
-              onChange={(e) => updateField('idMarca', e.target.value)}
+              value={formData.idMarca || ""}
+              onChange={handleSelectNumber('idMarca')}
               disabled={loadingBrands}
             >
               <option value="">
                 {loadingBrands ? 'Cargando marcas...' : 'Seleccionar marca'}
               </option>
               {brands.map((marca) => (
-                <option key={marca.id || marca.idMarca} value={marca.id || marca.idMarca}>
+                <option key={marca.idMarca} value={marca.idMarca}>
                   {marca.nombre}
                 </option>
               ))}
@@ -112,7 +144,7 @@ export const BasicInfoSection = ({
           )}
         </div>
 
-        {/* Categoría - desde BD */}
+        {/* Categoría*/}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Categoría <span className="text-red-500">*</span>
@@ -122,15 +154,15 @@ export const BasicInfoSection = ({
               className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
                 errors?.categoria || errors?.idCategoria ? 'border-red-500' : 'border-gray-300'
               } ${loadingCategories ? 'opacity-50' : ''}`}
-              value={formData.idCategoria || formData.categoria}
-              onChange={(e) => updateField('idCategoria', e.target.value)}
+              value={formData.idCategoria || ""}
+              onChange={handleSelectNumber('idCategoria')}
               disabled={loadingCategories}
             >
               <option value="">
                 {loadingCategories ? 'Cargando categorías...' : 'Seleccionar categoría'}
               </option>
               {categories.map((categoria) => (
-                <option key={categoria.id || categoria.idCategoria} value={categoria.id || categoria.idCategoria}>
+                <option key={categoria.idCategoria} value={categoria.idCategoria}>
                   {categoria.nombre}
                 </option>
               ))}
@@ -149,24 +181,65 @@ export const BasicInfoSection = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Imagen principal <span className="text-red-500">*</span>
           </label>
-          <input
-            type="url"
-            placeholder="URL de la imagen principal"
-            className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-              errors?.imagen ? 'border-red-500' : 'border-gray-300'
-            }`}
-            value={formData.imagen}
-            onChange={(e) => updateField('imagen', e.target.value)}
-          />
+          <div className="flex items-center gap-4">
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              className="block"
+              onChange={handleImageChange}
+            />
+            {formData.imagen && (
+              <div className="w-24 h-24 border rounded overflow-hidden flex items-center justify-center bg-gray-50">
+                <img
+                  src={formData.imagen}
+                  alt="Previsualización"
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            )}
+          </div>
           {errors?.imagen && (
             <p className="text-red-500 text-sm mt-1">{errors.imagen}</p>
+          )}
+        </div>
+
+        {/* Tienda */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tienda <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <select
+              className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
+                errors?.tienda || errors?.idTienda ? 'border-red-500' : 'border-gray-300'
+              } ${loadingStores ? 'opacity-50' : ''}`}
+              value={formData.idTienda || ""}
+              onChange={handleSelectNumber('idTienda')}
+              disabled={loadingStores}
+            >
+              <option value="">
+                {loadingStores ? 'Cargando tiendas...' : 'Seleccionar tienda'}
+              </option>
+              {stores.map((tienda) => (
+                <option key={tienda.idTienda} value={tienda.idTienda}>
+                  {tienda.nombre}
+                </option>
+              ))}
+            </select>
+            {loadingStores && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-gray-400" />
+            )}
+          </div>
+          {(errors?.tienda || errors?.idTienda) && (
+            <p className="text-red-500 text-sm mt-1">{errors.tienda || errors.idTienda}</p>
           )}
         </div>
 
         {/* Descripción */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Descripción <span className="text-red-500">*</span>
+            Descripción (Opcional):
           </label>
           <textarea
             rows="4"

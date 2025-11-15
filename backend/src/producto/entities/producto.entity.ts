@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Marca } from "../../marca/entities/marca.entity";
@@ -12,8 +13,9 @@ import { ProductoTienda } from "src/producto-tienda-producto/entities/producto-t
 import { DetalleCredito } from "../../detalle-credito/entities/detalle-credito.entity";
 import { DetalleSeparado } from "../../detalle-separado/entities/detalle-separado.entity";
 import { DetalleVenta } from "../../detalle-venta/entities/detalle-venta.entity";
-import { Garantia } from "../../garantia/entities/garantia.entity";
+import { Garantia} from "../../garantia/entities/garantia.entity";
 import { ProductoTipoProducto } from "src/producto-tipo-producto/entities/producto-tipo-producto.entity";
+import { ProductoColor } from "src/producto-color/entities/producto-color.entity";
 
 @Index("fk_producto_marca_2", ["idMarca"], {})
 @Entity("producto", { schema: "sarcos_db" })
@@ -21,44 +23,32 @@ export class Producto {
   @PrimaryGeneratedColumn({ type: "int", name: "id_producto" })
   idProducto: number;
 
-  @Column("int", { name: "id_marca", nullable: true })
-  idMarca: number | null;
+  @Column("varchar", { name: "nombre", length: 255 })
+  nombre: string ;
+  
+  @Column("varchar", { name: "modelo", length: 255 })
+  modelo: string ;
 
-  @Column("varchar", { name: "modelo", nullable: true, length: 255 })
-  modelo: string | null;
+  @Column("int", { name: "id_marca"})
+  idMarca: number;
 
-  @Column("varchar", { name: "nombre", nullable: true, length: 255 })
-  nombre: string | null;
-
-  @Column("int", { name: "stock", nullable: true })
-  stock: number | null;
-
-  @Column("varchar", {
-    name: "descripcion",
-    nullable: true,
-    comment: " ",
-    length: 1024,
-  })
+  @Column("varchar", { name: "descripcion", nullable: true, comment: " ", length: 1024,})
   descripcion: string | null;
+
+  @Column("int", { name: "stock", default:0, nullable: true })
+  stock: number | null;
 
   @Column("varchar", { name: "imagen", nullable: true, length: 255 })
   imagen: string | null;
 
-  @Column("decimal", {
-    name: "precio_tope",
-    nullable: true,
-    precision: 20,
-    scale: 2,
-  })
+  @Column("decimal", { name: "precio_tope", nullable: true, precision: 20, scale: 2,})
   precioTope: number | null;
 
-  @Column("decimal", {
-    name: "precio_venta",
-    nullable: true,
-    precision: 20,
-    scale: 2,
-  })
-  precio_venta: number | null;
+  @Column("decimal", { name: "precio_venta", nullable: true, precision: 20, scale: 2,})
+  precioVenta: number | null;
+
+  @Column("tinyint", { name: "estado", nullable: true, default: () => "'1'" })
+  estado: boolean | null;    
 
   @Column("date", { name: "fecha_ingreso", nullable: true })
   fechaIngreso: string | null;
@@ -70,12 +60,16 @@ export class Producto {
   descuento: number | null;
 
   @ManyToOne(() => Marca, (marca) => marca.productos, {
-    onDelete: "NO ACTION",
-    onUpdate: "NO ACTION",
+    onDelete: "RESTRICT",
+    onUpdate: "RESTRICT",
   })
+
   @JoinColumn([{ name: "id_marca", referencedColumnName: "idMarca" }])
   idMarca2: Marca;
-
+  
+  @OneToMany(() => ProductoColor, (productoColor) => productoColor.producto)
+  productoColores: ProductoColor[];
+  
   @OneToMany(
     () => ProductoTienda,
     (productoTienda) => productoTienda.idProducto2

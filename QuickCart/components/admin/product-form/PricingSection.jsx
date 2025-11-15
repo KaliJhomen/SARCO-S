@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+
 import { DollarSign } from 'lucide-react';
 
 export const PricingSection = ({
@@ -16,28 +17,49 @@ export const PricingSection = ({
         <h2 className="text-xl font-semibold text-gray-900">Precios</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Precio */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+
+
+        {/* Precio de compra */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Precio (S/.) <span className="text-red-500">*</span>
+            Precio de Compra (S/.) <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
-            step="0.01"
+            step="0.1"
+            min="0"
+            placeholder="0.00"
+            className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
+              errors?.precioTope ? 'border-red-500' : 'border-gray-300'
+            }`}
+            value={formData.precioTope || ''}
+            onChange={(e) => updateField('precioTope', e.target.value)}
+          />
+            {errors?.precioTope && (
+            <p className="text-red-500 text-sm mt-1">{errors.precioTope}</p>
+          )}
+        </div>
+        {/* Precio de venta */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Precio de venta (S/.) <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            step="0.1"
             min="0"
             placeholder="0.00"
             className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
               errors?.precio ? 'border-red-500' : 'border-gray-300'
             }`}
-            value={formData.precio}
-            onChange={(e) => updateField('precio', e.target.value)}
+            value={formData.precioVenta}
+            onChange={(e) => updateField('precioVenta', e.target.value)}
           />
-          {errors?.precio && (
-            <p className="text-red-500 text-sm mt-1">{errors.precio}</p>
+          {errors?.precioVenta && (
+            <p className="text-red-500 text-sm mt-1">{errors.precioVenta}</p>
           )}
         </div>
-
         {/* Descuento */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -70,8 +92,17 @@ export const PricingSection = ({
         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-sm text-green-800">
             <span className="font-semibold">
-              S/. {(parseFloat(formData.precio || 0) - precioFinal).toFixed(2)} 
-              ({formData.descuento} % de descuento)
+              Descuento: S/. {(parseFloat(formData.precio || 0) - precioFinal).toFixed(2)} ({formData.descuento}  %)
+            </span>
+          </p>
+        </div>
+      )}
+      {/* Margen de ganancia */}
+      {formData.precioCompra && (
+        <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <span className="font-semibold">
+              Ganancia (Aplicando Descuento) S/. {(precioFinal - parseFloat(formData.precioCompra || 0)).toFixed(2)}
             </span>
           </p>
         </div>

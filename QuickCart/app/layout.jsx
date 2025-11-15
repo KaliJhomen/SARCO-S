@@ -3,7 +3,6 @@ import '@/services/api/interceptors';
 import { QueryClientProvider } from '@/providers/QueryClientProvider';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
-// reemplazar import de Navbar por el controller
 import NavbarController from '@/components/layout/NavbarController';
 import Footer from '@/components/Footer';
 

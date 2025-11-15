@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Upload, AlertCircle } from 'lucide-react';
-import { COLORS } from '@/utils/constants';
+import { useColors } from '@/hooks/server/useColors';
 
 export const ColorCard = ({ 
   color, 
@@ -15,6 +15,9 @@ export const ColorCard = ({
 }) => {
   const [showCustomInput, setShowCustomInput] = useState(false);
 
+  // Usa el hook para obtener los colores
+  const { data: colors = [], isLoading } = useColors();
+
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     onAddImages(color.id, files);
@@ -22,26 +25,20 @@ export const ColorCard = ({
 
   const handleColorSelect = (e) => {
     const selectedValue = e.target.value;
-    
-    console.log('Color seleccionado:', selectedValue); // Debug
-    
     if (selectedValue === 'custom') {
       setShowCustomInput(true);
       onUpdate(color.id, 'colorId', 'custom');
       onUpdate(color.id, 'nombreColor', '');
       onUpdate(color.id, 'codigoHex', '#000000');
     } else if (selectedValue) {
-      const selectedColor = COLORS.find(c => c.id.toString() === selectedValue);
-      console.log('Color encontrado:', selectedColor); // Debug
-      
+      const selectedColor = colors.find(c => c.id_color.toString() === selectedValue);
       if (selectedColor) {
         setShowCustomInput(false);
-        onUpdate(color.id, 'colorId', selectedColor.id);
+        onUpdate(color.id, 'colorId', selectedColor.id_color);
         onUpdate(color.id, 'nombreColor', selectedColor.nombre);
-        onUpdate(color.id, 'codigoHex', selectedColor.hex);
+        onUpdate(color.id, 'codigoHex', selectedColor.codigo_hex);
       }
     } else {
-      // Vacío
       setShowCustomInput(false);
       onUpdate(color.id, 'colorId', '');
       onUpdate(color.id, 'nombreColor', '');
@@ -56,8 +53,6 @@ export const ColorCard = ({
   // Detectar si es personalizado
   useEffect(() => {
     if (color.colorId === 'custom') {
-      setShowCustomInput(true);
-    } else if (color.colorId && !COLORS.find(c => c.id === color.colorId)) {
       setShowCustomInput(true);
     } else {
       setShowCustomInput(false);
@@ -96,30 +91,25 @@ export const ColorCard = ({
                 title={color.nombreColor || 'Sin color seleccionado'}
               />
             </div>
-            
-            {/* Select */}
+            {/*Select*/}
             <select
               className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               value={color.colorId || ''}
               onChange={handleColorSelect}
+              disabled={isLoading}
             >
               <option value="">Seleccionar color</option>
-              {COLORS.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre} ({c.hex})
+              {colors.map((c) => (
+                <option key={c.id_color} value={c.id_color}>
+                  {c.nombre} ({c.codigo_hex})
                 </option>
               ))}
-              <option value="custom">➕ Color personalizado</option>
+              <option value="custom">+ Nuevo Color</option>
             </select>
           </div>
-          
-          {/* Debug info */}
-          <p className="text-xs text-gray-500 mt-1">
-            Valor actual: {color.colorId || 'ninguno'} | Nombre: {color.nombreColor || 'vacío'}
-          </p>
         </div>
 
-        {/* Stock */}
+        {/*Stock*/}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Stock <span className="text-red-500">*</span>
@@ -135,7 +125,7 @@ export const ColorCard = ({
         </div>
       </div>
 
-      {/* Input personalizado si selecciona "custom" */}
+      {/*Input personalizado si selecciona "custom"*/}
       {showCustomInput && (
         <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm font-medium text-blue-900 mb-3">
@@ -181,7 +171,6 @@ export const ColorCard = ({
           </div>
         </div>
       )}
-
       {/* Preview del color seleccionado (solo si NO es personalizado) */}
       {color.nombreColor && !showCustomInput && (
         <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center gap-3">
@@ -195,16 +184,14 @@ export const ColorCard = ({
           </div>
         </div>
       )}
-
       {/* Imágenes */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Imágenes del Color (máximo 4) <span className="text-red-500">*</span>
+          Imágen del Color <span className="text-red-500">*</span>
         </label>
-        
         <div className="flex flex-wrap gap-3">
-          {/* Preview de imágenes subidas */}
-          {color.imagenes && color.imagenes.map((img, imgIdx) => (
+          {/* Preview de imágen subida */}
+          {color.imagen && color.imagen.map((img, imgIdx) => (
             <div 
               key={imgIdx} 
               className="relative w-24 h-24 border border-gray-300 rounded-lg overflow-hidden bg-gray-50 group"
@@ -227,7 +214,7 @@ export const ColorCard = ({
           ))}
 
           {/* Botón para subir más imágenes */}
-          {(!color.imagenes || color.imagenes.length < 4) && (
+          {(!color.imagen) && (
             <label className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
               <Upload size={20} className="text-gray-400" />
               <span className="text-xs text-gray-500 mt-1">Subir</span>
@@ -241,14 +228,13 @@ export const ColorCard = ({
             </label>
           )}
         </div>
-
-        {/* Mensaje de advertencia si no hay imágenes */}
-        {(!color.imagenes || color.imagenes.length === 0) && (
+        {/* Mensaje de advertencia si no hay imágen */}
+        {(!color.imagen || color.imagen.length === 0) && (
           <p className="text-sm text-amber-600 mt-2 flex items-center gap-1">
             <AlertCircle size={16} />
             Este color necesita al menos una imagen
           </p>
-          )}
+        )}
       </div>
     </div>
   );

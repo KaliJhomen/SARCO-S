@@ -13,8 +13,16 @@ export class ProductoService {
     private productoRepository: Repository<Producto>,
   ) { }
 
-  create(createProductoDto: CreateProductoDto) {
-    return 'Esta acción agrega un nuevo producto';
+  async create(createProductoDto: CreateProductoDto) {
+    try {
+      const producto = this.productoRepository.create(createProductoDto);
+      return await this.productoRepository.save(producto);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Ocurrió un error al crear el producto',
+      );
+    }
   }
 
   async findAll() {
@@ -23,7 +31,6 @@ export class ProductoService {
         relations: ["idMarca2"],
       });
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException(
         'Ocurrió un error al obtener los productos',
       );
@@ -195,7 +202,7 @@ export class ProductoService {
       query.skip((filtros.page - 1) * filtros.limit);
   }
 
-  // ✅ MÉTODO ACTUALIZADO - RETORNA DATOS REALES
+  // MÉTODO ACTUALIZADO - RETORNA DATOS REALES
   async findOne(id: number) {
     try {
       const producto = await this.productoRepository.findOne({
@@ -221,11 +228,36 @@ export class ProductoService {
     }
   }
 
-  update(id: number, updateProductoDto: UpdateProductoDto) {
-    return `This action updates a #${id} producto`;
+  async update(id: number, updateProductoDto: UpdateProductoDto) {
+    try {
+      const producto = await this.productoRepository.preload({
+        idProducto: id,
+        ...updateProductoDto,
+      });
+      if (!producto) {
+        throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+      }
+      return await this.productoRepository.save(producto);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error al actualizar el producto con ID ${id}`,
+      );
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} producto`;
+  async remove(id: number) {
+    try {
+      const producto = await this.productoRepository.findOne({ where: { idProducto: id } });
+      if (!producto) {
+        throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+      }
+      await this.productoRepository.remove(producto);
+      return { message: `Producto con ID ${id} eliminado correctamente` };
+    } catch (error) {
+      console.error('Error en remove:', error);
+      throw new InternalServerErrorException(
+        `Error al eliminar el producto con ID ${id}`,
+      );
+    }
   }
 }
