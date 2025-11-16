@@ -34,7 +34,7 @@ export const PricingSection = ({
               errors?.precioTope ? 'border-red-500' : 'border-gray-300'
             }`}
             value={formData.precioTope || ''}
-            onChange={(e) => updateField('precioTope', e.target.value)}
+            onChange={e => updateField('precioTope', e.target.value)}
           />
             {errors?.precioTope && (
             <p className="text-red-500 text-sm mt-1">{errors.precioTope}</p>
@@ -51,10 +51,10 @@ export const PricingSection = ({
             min="0"
             placeholder="0.00"
             className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
-              errors?.precio ? 'border-red-500' : 'border-gray-300'
+              errors?.precioVenta ? 'border-red-500' : 'border-gray-300'
             }`}
-            value={formData.precioVenta}
-            onChange={(e) => updateField('precioVenta', e.target.value)}
+            value={formData.precioVenta ?? ''}
+            onChange={e => updateField('precioVenta', e.target.value === '' ? '' : Number(e.target.value))}
           />
           {errors?.precioVenta && (
             <p className="text-red-500 text-sm mt-1">{errors.precioVenta}</p>
@@ -92,17 +92,18 @@ export const PricingSection = ({
         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-sm text-green-800">
             <span className="font-semibold">
-              Descuento: S/. {(parseFloat(formData.precio || 0) - precioFinal).toFixed(2)} ({formData.descuento}  %)
+              Descuento: S/. {(parseFloat(formData.precioVenta || 0) - precioFinal).toFixed(2)} ({formData.descuento}  %)
             </span>
           </p>
         </div>
       )}
+
       {/* Margen de ganancia */}
-      {formData.precioCompra && (
+      {formData.precioTope && (
         <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800">
             <span className="font-semibold">
-              Ganancia (Aplicando Descuento) S/. {(precioFinal - parseFloat(formData.precioCompra || 0)).toFixed(2)}
+              Ganancia (Aplicando Descuento) S/. {(precioFinal - parseFloat(formData.precioTope || 0)).toFixed(2)}
             </span>
           </p>
         </div>

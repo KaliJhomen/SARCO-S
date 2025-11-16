@@ -31,7 +31,9 @@ export const ColorCard = ({
       onUpdate(color.id, 'nombreColor', '');
       onUpdate(color.id, 'codigoHex', '#000000');
     } else if (selectedValue) {
-      const selectedColor = colors.find(c => c.id_color.toString() === selectedValue);
+      const selectedColor = colors.find(
+        c => c.id_color !== undefined && c.id_color.toString() === selectedValue
+      );
       if (selectedColor) {
         setShowCustomInput(false);
         onUpdate(color.id, 'colorId', selectedColor.id_color);

@@ -207,7 +207,7 @@ export class ProductoService {
     try {
       const producto = await this.productoRepository.findOne({
         where: { idProducto: id },
-        relations: ['idMarca2'], // Incluir relación con marca
+        relations: ['idMarca2'], 
       });
 
       if (!producto) {

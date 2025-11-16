@@ -10,12 +10,7 @@ import { useAppContext } from "@/context/AppContext";
 import { ShoppingCart, Loader2 } from 'lucide-react';
 import { useProductDetails } from "@/hooks/server/useProductDetails";
 
-const formatPrice = (precio) =>
-  new Intl.NumberFormat('es-PE', {
-    style: 'currency',
-    currency: 'PEN',
-    minimumFractionDigits: 2,
-  }).format(precio);
+import {formatPrice} from '@/utils/helpers/formatters';
 
 const Product = () => {
   const { id } = useParams();

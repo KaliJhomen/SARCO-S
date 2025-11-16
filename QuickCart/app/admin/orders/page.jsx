@@ -5,6 +5,7 @@ import { useAppContext } from "@/context/AppContext";
 import Loading from "@/components/Loading";
 import { Package, MapPin, Calendar, CreditCard, Eye, Truck } from 'lucide-react';
 
+import {formatPrice} from '@/utils/helpers/formatters';
 // Generar órdenes dummy
 const generateDummyOrders = (count = 20) => {
   const estados = ['Pendiente', 'Procesando', 'Enviado', 'Entregado', 'Cancelado'];
@@ -70,14 +71,6 @@ const Orders = () => {
     useEffect(() => {
         fetchSellerOrders();
     }, []);
-
-    const formatPrice = (precio) => {
-        return new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-            minimumFractionDigits: 2,
-        }).format(precio);
-    };
 
     const getEstadoColor = (estado) => {
         const colores = {

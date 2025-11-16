@@ -1,60 +1,59 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { validateProductForm } from '@/utils/helpers/productValidators';
-import {calculateFinalPrice, calculateMonthlyPayment, calculateTotalStock } from '@/utils/helpers/calculators';
+import {calculateFinalPrice/*, calculateMonthlyPayment, calculateTotalStock */} from '@/utils/helpers/calculators';
 
 export const useProductForm = () => {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     // Campos básicos del producto
     nombre: '',
     modelo: '',         
     descripcion: '',
+    stock: 0,
+    imagen: '',        
     precioTope: '',
     precioVenta: '',
     descuento: 0,
-    
-    // Relaciones (IDs) - según tu BD
+    fechaIngreso: new Date().toISOString().split('T')[0], 
+
+    // Relaciones (IDs)
     idMarca: '',
     idCategoria: '',
-    idTienda: '',       // <--- Faltaba
+    idTienda: '',      
     
-    // Información adicional
-    garantia: '',
-    mesesCredito: 0,
-/*    
-    // Colores con sus imágenes y stock
+    garantiaFabrica: '',
     colores: [{
-      id: Date.now(),
-      nombreColor: '',
+      idColor:Date.now(),
+      nombre: '',
       codigoHex: '#000000',
       stock: 0,
-      imagenes: [] // URLs de imágenes subidas
+      imagenes: []
     }]
-*/      
-  });
+  };
 
+  const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Calcular valores derivados usando helpers
   const precioFinal = useMemo(() => 
-    calculateFinalPrice(formData.precio, formData.descuento),
-    [formData.precio, formData.descuento]
+    calculateFinalPrice(formData.precioVenta, formData.descuento),
+    [formData.precioVenta, formData.descuento]
   );
-
+/* Posible uso en Creditos
   const pagoMensual = useMemo(() => 
     calculateMonthlyPayment(formData.precio, formData.mesesSinInteres),
     [formData.precio, formData.mesesSinInteres]
   );
-
+*/
+/*
   const stockTotal = useMemo(() => 
     calculateTotalStock(formData.colores),
     [formData.colores]
   );
-
+*/
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Limpiar error del campo al editar
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
@@ -122,18 +121,19 @@ export const useProductForm = () => {
     }));
   };
 
-  // Validar usando productValidators existente
   const validate = () => {
     const validation = validateProductForm({
       nombre: formData.nombre,
+      modelo: formData.modelo, 
       idMarca: formData.idMarca,
-      precio: formData.precio,
+      precioTope: formData.precioTope,
+      precioVenta: formData.precioVenta,
+      descuento: formData.descuento,
       idCategoria: formData.idCategoria,
       colores: formData.colores,
-      imagen: formData.imagen, // si usas imagen principal
-      modelo: formData.modelo, // si usas modelo
-      idTienda: formData.idTienda, // si usas tienda
-      // ...otros campos necesarios
+      imagen: formData.imagen, 
+      idTienda: formData.idTienda,
+      fechaIngreso: formData.fechaIngreso, 
     });
 
     setErrors(validation.errors);
@@ -143,30 +143,47 @@ export const useProductForm = () => {
   const resetForm = () => {
     setFormData({
       nombre: '',
-      modelo: '',         // <--- Faltaba
+      modelo: '',         
       descripcion: '',
-      precio: '',
+      stock: 0,
+      imagen: '',        
+      precioTope: '',
+      precioVenta: '',
       descuento: 0,
+      fechaIngreso: new Date().toISOString().split('T')[0], 
+
+      // Relaciones (IDs)
       idMarca: '',
       idCategoria: '',
-      idTienda: '',       // <--- Faltaba
-      imagen: '',         // <--- Faltaba
-      garantia: '',
-      mesesSinInteres: 0,
+      idTienda: '',      
+      
+      garantiaFabrica: '',
       colores: [{
-        id: Date.now(),
-        nombreColor: '',
+        idColor:Date.now(),
+        nombre: '',
         codigoHex: '#000000',
         stock: 0,
         imagenes: []
-      }]
+        }]
     });
     setErrors({});
+  };
+
+  const onSubmit = async (e, { onSuccess, onError }) => {
+    // ...validación y guardado...
+    if (guardadoExitoso) {
+      onSuccess && onSuccess();
+      return true;
+    } else {
+      onError && onError();
+      return false;
+    }
   };
 
   return {
     formData,
     errors,
+    onSubmit,
     isSubmitting,
     setIsSubmitting,
     updateField,
@@ -177,9 +194,17 @@ export const useProductForm = () => {
     removeColorImage,
     validate,
     resetForm,
-    // Valores calculados
+
     precioFinal,
+    /*
     pagoMensual,
+    
     stockTotal,
+    */
+    productoColor: formData.colores.map(color => ({
+      idColor: color.idColor,
+      stock: color.stock,
+      imagen: color.imagenes?.[0] || "",
+    }))
   };
 };

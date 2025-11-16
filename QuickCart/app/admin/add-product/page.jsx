@@ -5,40 +5,38 @@ import { useProductForm } from '@/hooks/local/useProductForm';
 import { productService } from '@/services/product.service';
 import { ProductForm } from '@/components/admin/product-form/page';
 import toast from 'react-hot-toast';
+import { useImageUpload } from "@/hooks/local/useImageUpload";
 
 const AddProductPage = () => {
   const router = useRouter();
   const productForm = useProductForm();
+  const { uploadImage, uploading, error } = useImageUpload();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validar con productValidators
+    console.log('Valor de fechaIngreso:', productForm.formData.fechaIngreso);
     if (!productForm.validate()) {
-      toast.error('Por favor completa todos los campos requeridos correctamente');
       console.log('Errores de validación:', productForm.errors);
-      return;
+      toast.error('Por favor completa todos los campos requeridos correctamente');
+      return false;
     }
 
     productForm.setIsSubmitting(true);
 
     try {
-      // Crear producto en BD con todos los campos requeridos
       const result = await productService.create(productForm.formData);
 
       toast.success('Producto creado exitosamente');
       productForm.resetForm();
-
-      // Redirigir al detalle del producto creado
       router.push(`/admin/products/${result.id || result.idProducto}`);
+      return true; // <-- aquí retornas true si todo salió bien
     } catch (error) {
-      console.error('Error al crear producto:', error);
-
-      // Mostrar error específico del servidor
+      console.log('Error al guardar producto:', error); // <-- aquí
       const errorMessage = error.response?.data?.message ||
         error.response?.data?.error ||
         'Error al crear el producto';
       toast.error(errorMessage);
+      return false; // <-- explícito
     } finally {
       productForm.setIsSubmitting(false);
     }
@@ -96,6 +94,21 @@ const AddProductPage = () => {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const imageUrl = await uploadImage(file);
+              if (imageUrl) {
+                productForm.updateField('imagen', imageUrl);
+              }
+            }
+          }}
+        />
+        {uploading && <span>Subiendo imagen...</span>}
+        {error && <span className="text-red-500">{error}</span>}
       </div>
     </div>
   );

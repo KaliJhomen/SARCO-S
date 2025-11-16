@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProductById, getAllProducts } from "@/services/product.service";
+import { productService } from "@/services/product.service";
 
 export function useProductDetails(id) {
   const [productData, setProductData] = useState(null);
@@ -14,11 +14,11 @@ export function useProductDetails(id) {
 
     const fetchData = async () => {
       try {
-        const product = await getProductById(id);
+        const product = await productService.getById(id);
         if (!product) throw new Error("Producto no encontrado");
         setProductData(product);
 
-        const allProducts = await getAllProducts();
+        const allProducts = await productService.getAll();
         const related = allProducts
           .filter(
             (p) =>

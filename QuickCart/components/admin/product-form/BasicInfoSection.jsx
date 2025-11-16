@@ -1,9 +1,17 @@
 'use client';
+import client from '@/services/api/client';
 import React, { useRef } from 'react';
 import { Package, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useBrands } from '@/hooks/server/useBrands';
 import { useCategories } from '@/hooks/server/useCategories';
+import { useProductForm } from '@/hooks/local/useProductForm';
+import { useAuth } from "@/hooks/server/useAuth";
+
 import { useStores } from '@/hooks/server/useStores';
+import { useImageUpload } from '@/hooks/local/useImageUpload';
+import { useColors} from '@/hooks/server/useColors';
+
+
 
 export const BasicInfoSection = ({
   formData,
@@ -13,29 +21,25 @@ export const BasicInfoSection = ({
   const { data: brands = [], isLoading: loadingBrands } = useBrands();
   const { data: categories = [], isLoading: loadingCategories } = useCategories();
   const { data: stores = [], isLoading: loadingStores } = useStores();
+  const { data: colors = [], isLoading: loadingColors } = useColors();
   const fileInputRef = useRef();
 
-  // Previsualización de imagen
+  // Usa el hook personalizado
+  const { uploadImage, uploading, error } = useImageUpload();
+  const { token } = useAuth(); // Así obtienes el token del usuario autenticado
+
+  // Nueva función usando el hook
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const formDataImg = new FormData();
-    formDataImg.append('file', file);
-
-    try {
-      const res = await fetch('http://localhost:4000/api/upload', {
-        method: 'POST',
-        body: formDataImg,
-      });
-      const data = await res.json();
-      if (data.url) {
-        updateField('imagen', data.url); // Guarda la URL
-      } else {
-        alert('Error al subir la imagen');
-      }
-    } catch (err) {
-      alert('Error al subir la imagen');
+    const url = await uploadImage(file, token);
+    
+    if (url) {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:4000';
+      const imageUrl = url.startsWith("http")
+        ? url
+      : `${BASE_URL}${url}`; 
+      updateField('imagen', imageUrl);
     }
   };
 
@@ -76,7 +80,7 @@ export const BasicInfoSection = ({
         {/* Modelo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Modelo <span className="text-red-500">*</span>
+            Modelo 
           </label>
           <input
             type="text"
@@ -179,16 +183,24 @@ export const BasicInfoSection = ({
         {/* Imagen principal */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Imagen principal <span className="text-red-500">*</span>
+            Imagen principal 
           </label>
           <div className="flex items-center gap-4">
             <input
               type="file"
               accept="image/*"
-              ref={fileInputRef}
-              className="block"
-              onChange={handleImageChange}
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const imageUrl = await uploadImage(file, token);
+                  if (imageUrl) {
+                    updateField('imagen', imageUrl);
+                  }
+                }
+              }}
             />
+            {uploading && <span>Subiendo imagen...</span>}
+            {error && <span className="text-red-500">{error}</span>}
             {formData.imagen && (
               <div className="w-24 h-24 border rounded overflow-hidden flex items-center justify-center bg-gray-50">
                 <img
@@ -203,11 +215,58 @@ export const BasicInfoSection = ({
             <p className="text-red-500 text-sm mt-1">{errors.imagen}</p>
           )}
         </div>
-
+        {/* Color (Opcional) */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Color (Opcional)
+            </label>
+            <div className="relative">
+              <select
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
+                  errors?.idColor ? 'border-red-500' : 'border-gray-300'
+                } ${loadingColors ? 'opacity-50' : ''}`}
+                value={formData.idColor || ""}
+                onChange={handleSelectNumber('idColor')}
+                disabled={loadingColors}
+              >
+                <option value="">
+                  {loadingColors ? 'Cargando colores...' : 'Seleccionar color'}
+                </option>
+                {colors.map((color) => (
+                  <option key={color.idColor} value={color.idColor}>
+                    {color.nombre}
+                  </option>
+                ))}
+              </select>
+              {loadingColors && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-gray-400" />
+              )}
+            </div>
+            {errors?.idColor && (
+              <p className="text-red-500 text-sm mt-1">{errors.idColor}</p>
+            )}
+          </div>
+          {/* Vista previa del color */}
+          <div className="flex items-center h-full mt-6">
+            {formData.idColor && (
+              (() => {
+                const selected = colors.find(c => c.idColor === Number(formData.idColor));
+                return selected ? (
+                  <div
+                    title={selected.nombre}
+                    className="w-8 h-8 rounded-full border border-gray-300"
+                    style={{ backgroundColor: selected.codigoHex || '#fff' }}
+                  />
+                ) : null;
+              })()
+            )}
+          </div>
+        </div>
         {/* Tienda */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tienda <span className="text-red-500">*</span>
+            Tienda 
           </label>
           <div className="relative">
             <select
@@ -235,6 +294,23 @@ export const BasicInfoSection = ({
             <p className="text-red-500 text-sm mt-1">{errors.tienda || errors.idTienda}</p>
           )}
         </div>
+        {/* Fecha de Ingreso */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Fecha de Ingreso <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="date"
+            className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
+              errors?.fechaIngreso ? 'border-red-500' : 'border-gray-300'
+            }`}
+            value={formData.fechaIngreso || ''}
+            onChange={e => updateField('fechaIngreso', e.target.value)}
+          />
+          {errors?.fechaIngreso && (
+            <p className="text-red-500 text-sm mt-1">{errors.fechaIngreso}</p>
+          )}
+        </div>
 
         {/* Descripción */}
         <div className="md:col-span-2">
@@ -254,6 +330,8 @@ export const BasicInfoSection = ({
             <p className="text-red-500 text-sm mt-1">{errors.descripcion}</p>
           )}
         </div>
+
+        
       </div>
     </div>
   );

@@ -5,6 +5,8 @@ import { useAppContext } from "@/context/AppContext";
 import Loading from "@/components/Loading";
 import { ExternalLink, Edit, Trash2 } from 'lucide-react';
 
+import {formatPrice} from '@/utils/helpers/formatters';
+
 const ProductList = () => {
   const { router } = useAppContext();
 
@@ -18,14 +20,6 @@ const ProductList = () => {
   useEffect(() => {
     fetchSellerProduct();
   }, []);
-
-  const formatPrice = (precio) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN',
-      minimumFractionDigits: 2,
-    }).format(precio);
-  };
 
   const handleDelete = (productId) => {
     if (confirm('¿Estás seguro de eliminar este producto?')) {

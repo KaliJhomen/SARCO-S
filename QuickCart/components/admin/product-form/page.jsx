@@ -1,39 +1,47 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BasicInfoSection } from './BasicInfoSection';
 import { PricingSection } from './PricingSection';
 import { WarrantySection } from './WarrantySection';
-import { ColorStockSection } from './ColorStockSection';
-import { calculateFinalPrice, calculateMonthlyPayment } from '@/utils/helpers/calculators';
+import { useProductForm } from '@/hooks/local/useProductForm';
+import { calculateFinalPrice/*, calculateMonthlyPayment */} from '@/utils/helpers/calculators';
 
 export const ProductForm = ({
   formData,
   errors,
   isSubmitting,
   updateField,
-  addColor,
-  removeColor,
-  updateColor,
-  addColorImages,
-  removeColorImage,
   onSubmit,
   onCancel,
   stockTotal,
 }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showColors, setShowColors] = useState(formData.colores && formData.colores.length > 0);
 
-  const precioFinal = calculateFinalPrice(formData.precio, formData.descuento);
-  const cuotaMensual = calculateMonthlyPayment(precioFinal, formData.mesesSinInteres);
-
-  // En tu función onSubmit, asegúrate de llamar a setShowSuccessModal(true) cuando el producto se agregue correctamente.
+  const precioFinal = calculateFinalPrice(formData.precioVenta, formData.descuento);
+  /*const cuotaMensual = calculateMonthlyPayment(precioFinal, formData.mesesSinInteres);
+*/
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Intentando guardar producto...');
     const result = await onSubmit(e);
+    console.log('Resultado de onSubmit:', result);
     if (result === true) {
       setShowSuccessModal(true);
     }
   };
 
+  // Nuevo: función para agregar el primer color y mostrar la sección
+  const handleAddFirstColor = () => {
+    addColor();
+    setShowColors(true);
+  };
+
+  useEffect(() => {
+    if (formData.colores.length === 0) {
+      setShowColors(false);
+    }
+  }, [formData.colores]);
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -49,6 +57,8 @@ export const ProductForm = ({
           formData={formData}
           errors={errors}
           updateField={updateField}
+          precioTope={formData.precioTope}
+          precioVenta={formData.precioVenta}
           precioFinal={precioFinal}
         />
 
@@ -56,19 +66,6 @@ export const ProductForm = ({
         <WarrantySection
           formData={formData}
           updateField={updateField}
-          cuotaMensual={cuotaMensual}
-        />
-
-        {/* COLORES Y STOCK */}
-        <ColorStockSection
-          colores={formData.colores}
-          errors={errors.colores}
-          stockTotal={stockTotal}
-          addColor={addColor}
-          removeColor={removeColor}
-          updateColor={updateColor}
-          addColorImages={addColorImages}
-          removeColorImage={removeColorImage}
         />
 
         {/* BOTONES DE ACCIÓN */}

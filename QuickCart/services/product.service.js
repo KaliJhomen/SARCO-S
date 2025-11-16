@@ -1,5 +1,6 @@
 import client from './api/client';
 import endpoints from './api/endpoints';
+import { colorService } from './color.service';
 
 export const productService = {
   async getAll(token) {
@@ -60,19 +61,35 @@ export const productService = {
 
   async create(formData, token) {
     const payload = {
-      nombre: formData.nombre.trim(),
-      modelo: formData.modelo.trim(),
-      idMarca: parseInt(formData.idMarca),
-      descripcion: formData.descripcion.trim(),
+      nombre: formData.nombre?.trim() || "",
+      modelo: formData.modelo?.trim() || "",
+      descripcion: formData.descripcion?.trim() || "",
       stock: parseInt(formData.stock) || 0,
-      imagen: formData.imagen.trim(),
+      imagen: formData.imagen?.trim() || "",
       precioTope: parseFloat(formData.precioTope),
-      precioVenta: parseFloat(formData.precioVenta),
-      estado: formData.estado !== undefined ? formData.estado : 1,
-      fechaIngreso: new Date().toISOString(), // Asignación de fecha y hora actual
+      precioVenta: parseFloat(formData.precioVenta),   
       descuento: parseFloat(formData.descuento) || 0,
-      garantia: formData.garantia?.trim() || null,
+      fechaIngreso: formData.fechaIngreso || "",      
+
+      idMarca: parseInt(formData.idMarca),
+      /*
+      idCategoria: parseInt(formData.idCategoria),
+      idTienda: parseInt(formData.idTienda),
+      */
+      garantiaFabrica: formData.garantiaFabrica?.trim() || null,
+/*
+      productoColor: formData.colores.map(color => ({
+        idColor: color.idColor, 
+        stock: color.stock,
+        imagen: color.imagenes?.[0] || "",
+        nombre: color.nombre?.trim() || "",
+        codigoHex: color.codigoHex || "#000000",
+      }))
+      */
+      /*
+      estado: formData.estado !== undefined ? formData.estado : 1,
       mesesCredito: parseInt(formData.mesesCredito) || 0,
+      */
     };
 
     const response = await client.post(endpoints.products.base, payload, {
@@ -86,21 +103,28 @@ export const productService = {
       nombre: data.nombre?.trim(),
       modelo: data.modelo?.trim(),
       descripcion: data.descripcion?.trim(),
-      precio: data.precio ? parseFloat(data.precio) : undefined,
-      descuento: data.descuento !== undefined ? parseFloat(data.descuento) : undefined,
       stock: data.stock ? parseInt(data.stock) : undefined,
       imagen: data.imagen?.trim(),
+      precioTope: data.precioTope ? parseFloat(data.precioTope) : undefined,
+      precioVenta: data.precioVenta ? parseFloat(data.precioVenta) : undefined,
+      descuento: data.descuento !== undefined ? parseFloat(data.descuento) : undefined,
+      fechaIngreso: data.fechaIngreso,
+  
       idMarca: data.idMarca ? parseInt(data.idMarca) : undefined,
       idCategoria: data.idCategoria ? parseInt(data.idCategoria) : undefined,
-      garantia: data.garantia?.trim() || null,
+      idTienda: data.idTienda ? parseInt(data.idTienda) : undefined,
+
+      garantiaFabrica: data.garantiaFabrica?.trim() || null,
+      productoColor: data.colores ? data.colores.map(color => ({
+        idColor: color.idColor,
+        nombre: color.nombre?.trim() || "",
+        codigoHex: color.codigoHex || "#000000",
+      })) : undefined,
+/*
+      estadio: data.estado !== undefined ? data.estado : undefined,
       mesesCredito: data.mesesCredito ? parseInt(data.mesesCredito) : undefined,
-      colores: data.colores?.filter(c => c.nombreColor?.trim()).map(c => ({
-        nombreColor: c.nombreColor.trim(),
-        codigoHex: c.codigoHex || '#000000',
-        stock: parseInt(c.stock) || 0,
-        imagenes: c.imagenes
-      }))
-    };
+*/
+      };
 
     return client.put(endpoints.products.byId(id), payload, {
       headers: { Authorization: `Bearer ${token}` }
@@ -113,15 +137,3 @@ export const productService = {
     });
   },
 };
-
-export async function getProductById(id) {
-  const res = await fetch(`http://localhost:4000/api/producto/${id}`);
-  if (!res.ok) throw new Error("Producto no encontrado");
-  return res.json();
-}
-
-export async function getAllProducts() {
-  const res = await fetch(`http://localhost:4000/api/producto`);
-  if (!res.ok) throw new Error("No se pudieron cargar los productos");
-  return res.json();
-}

@@ -57,13 +57,13 @@ const endpoints = {
   // ============================================
   // IMÁGENES
   // ============================================
-  /*images: {
+  images: {
     upload: '/upload',
     uploadMultiple: '/upload/multiple',
     delete: (filename) => `/upload/${filename}`,
     byProduct: (productId) => `/imagen/producto/${productId}`,
   },
-  */
+  
   // ============================================
   // CARRITO
   // ============================================
